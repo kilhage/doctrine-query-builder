@@ -1,1 +1,1 @@
-# template-bundle
+# doctrine-query-builder-bundle

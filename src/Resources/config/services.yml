@@ -1,0 +1,6 @@
+services:
+
+    glooby.doctrine.query_builder:
+        class: Glooby\Doctrine\QueryBuilderBundle\QueryBuilder
+        calls:
+            - [ setDoctrine, [ '@doctrine' ]]
