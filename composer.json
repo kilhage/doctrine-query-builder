@@ -2,7 +2,7 @@
     "name": "glooby/doctrine-query-builder",
     "license": "MIT",
     "type": "library",
-    "description": "doctrine-query-builder",
+    "description": "Very powerful query builder, perfect for apis",
     "authors": [
         {
             "name": "Emil Kilhage",
