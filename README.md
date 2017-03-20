@@ -25,15 +25,15 @@ With [Composer](https://getcomposer.org/):
 ```php
 use \Glooby\Doctrine\QueryBuilder\QueryBuilder;
 
-$repository = $this->getDoctrine()->getManager()->getRepository('AcmeMainBundle:Person');
-$qb = new QueryBuilder($repository, $request);
+$repo = $this->getDoctrine()->getManager()->getRepository('AcmeMainBundle:Person');
+$qb = new QueryBuilder();
 
-$results = $qb->getQuery()->getResult();
+$results = $qb->build($repo, $data)->getQuery()->getResult();
 
 return new JsonResponse($results);
 ```
 
-Example:
+### Example data:
 ```json
 {
     "alias": "p",
