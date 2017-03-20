@@ -25,7 +25,7 @@ class QueryBuilder
             Param::LIMIT => $request->get(Param::LIMIT, 20),
             Param::OFFSET => $request->get(Param::OFFSET, 0),
             Param::ORDER_BY => $request->get(Param::ORDER_BY, null),
-            Param::FILTER => $request->get(Param::FILTER, null),
+            Param::WHERE => $request->get(Param::WHERE, null),
             Param::PARAMS => $request->get(Param::PARAMS, null),
             Param::ALIAS => $request->get(Param::ALIAS, null),
         ]);
@@ -57,7 +57,7 @@ class QueryBuilder
             $this->addJoin($query, $alias, $params);
         }
 
-        if (!empty($params[Param::FILTER])) {
+        if (!empty($params[Param::WHERE])) {
             $this->buildFilters($query, $alias, $params);
         }
 
@@ -244,9 +244,9 @@ class QueryBuilder
      */
     private function buildFilters(\Doctrine\ORM\QueryBuilder $query, $alias, array $params)
     {
-        if (is_array($params[Param::FILTER])) {
+        if (is_array($params[Param::WHERE])) {
             $expr = $query->expr();
-            $and = $this->addFilters($query, $expr, $params[Param::FILTER], $alias);
+            $and = $this->addFilters($query, $expr, $params[Param::WHERE], $alias);
             call_user_func_array([$query, 'where'], $and);
         } else {
             throw new BadRequestHttpException();
