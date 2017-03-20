@@ -57,15 +57,13 @@ Example:
             ]
         },
         "c.employees": { "$equals": 1 },
+        "l.code": 49,
         "p.country": "$not_null",
         "p.phone": "$is_null",
         "c.assets": { "$gte": 1000 },
         "c.turnover": { "$lt": 10000 },
         "t.code": {
             "$in": [1, 2, 3]
-        },
-        "l.code": {
-            "$equals": 49
         },
         "r.title": {
             "$not_in": ":titles"
