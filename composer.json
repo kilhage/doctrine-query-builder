@@ -10,7 +10,7 @@
         }
     ],
     "autoload": {
-        "psr-4": { "Glooby\\Doctrine\\QueryBuilder": "src/" }
+        "psr-4": { "Glooby\\Doctrine\\QueryBuilder\\": "src/" }
     },
     "require": {
         "php": ">=5.6",
