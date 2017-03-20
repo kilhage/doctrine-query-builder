@@ -1,14 +1,14 @@
 <?php
 
-namespace Glooby\Doctrine\QueryBuilderBundle;
+namespace Glooby\Doctrine\QueryBuilder;
 
 /**
  * @author Emil Kilhage
  */
 interface Filter
 {
-    const OR = '$or';
-    const AND = '$and';
+    const _OR = '$or';
+    const _AND = '$and';
     const EQUALS = '$equals';
     const NOT_EQUALS = '$not_equals';
     const STARTS = '$starts';

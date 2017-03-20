@@ -1,9 +1,7 @@
 <?php
 
-namespace Glooby\Doctrine\QueryBuilderBundle;
+namespace Glooby\Doctrine\QueryBuilder;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,19 +12,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class QueryBuilder
 {
-    /**
-     * @var ManagerRegistry
-     */
-    protected $doctrine;
-
-    /**
-     * @param ManagerRegistry $doctrine
-     */
-    public function setDoctrine($doctrine)
-    {
-        $this->doctrine = $doctrine;
-    }
-
     /**
      * @param EntityRepository $repo
      * @param Request $request
@@ -55,9 +40,19 @@ class QueryBuilder
      */
     public function build(EntityRepository $repo, array $params)
     {
+        print_r($params);
+
         $alias = $params[Param::ALIAS] ?? 'xxxx'.random_int(1, 200);
 
         $query = $repo->createQueryBuilder($alias);
+
+        if (!empty($params[Param::SELECT])) {
+            $query->select($params[Param::SELECT]);
+        }
+
+        if (!empty($params[Param::DISTINCT])) {
+            $query->distinct($params[Param::DISTINCT]);
+        }
 
         if (isset($params[Param::JOIN])) {
             $this->addJoin($query, $alias, $params);
@@ -132,10 +127,10 @@ class QueryBuilder
         $predicts = [];
 
         foreach ($filters as $field => $filter) {
-            if ($field === Filter::OR) {
+            if ($field === Filter::_OR) {
                 $or = $this->addFilters($query, $expr, $filter, $alias);
                 $predicts[] = $expr->orX(...$or);
-            } elseif ($field === Filter::AND) {
+            } elseif ($field === Filter::_AND) {
                 $and = $this->addFilters($query, $expr, $filter, $alias);
                 $predicts[] = $expr->andX(...$and);
             } else {
@@ -157,27 +152,27 @@ class QueryBuilder
                 foreach ($filter as $op => $value) {
                     switch ($op) {
                         case Filter::EQUALS:
-                            $value = $this->quote($value);
+                            $value = $expr->literal($value);
                             $predicts[] = $expr->eq($field, $value);
                             break;
                         case Filter::NOT_EQUALS:
-                            $value = $this->quote($value);
+                            $value = $expr->literal($value);
                             $predicts[] = $expr->neq($field, $value);
                             break;
                         case Filter::STARTS:
-                            $value = $this->quote("%$value");
+                            $value = $expr->literal("%$value");
                             $predicts[] = $expr->like($field, $value);
                             break;
                         case Filter::ENDS:
-                            $value = $this->quote("$value%");
+                            $value = $expr->literal("$value%");
                             $predicts[] = $expr->like($field, $value);
                             break;
                         case Filter::CONTAINS:
-                            $value = $this->quote("%$value%");
+                            $value = $expr->literal("%$value%");
                             $predicts[] = $expr->like($field, "$value");
                             break;
                         case Filter::NOT_CONTAINS:
-                            $value = $this->quote("%$value%");
+                            $value = $expr->literal("%$value%");
                             $predicts[] = $expr->notLike($field, $value);
                             break;
                         case Filter::IN:
@@ -224,17 +219,6 @@ class QueryBuilder
         }
 
         return $predicts;
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    private function quote($value)
-    {
-        /** @var Connection $conn */
-        $conn = $this->doctrine->getConnection();
-        return $conn->quote($value);
     }
 
     /**

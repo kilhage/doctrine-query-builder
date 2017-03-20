@@ -1,6 +1,6 @@
 <?php
 
-namespace Glooby\Doctrine\QueryBuilderBundle;
+namespace Glooby\Doctrine\QueryBuilder;
 
 /**
  * @author Emil Kilhage
@@ -14,4 +14,6 @@ class Param
     const JOIN = 'join';
     const ALIAS = 'alias';
     const PARAMS = 'params';
+    const SELECT = 'select';
+    const DISTINCT = 'distinct';
 }

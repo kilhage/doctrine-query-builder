@@ -1,8 +1,8 @@
 {
-    "name": "glooby/doctrine-query-builder-bundle",
-    "license": "proprietary",
-    "type": "symfony-bundle",
-    "description": "doctrine-query-builder-bundle",
+    "name": "glooby/doctrine-query-builder",
+    "license": "MIT",
+    "type": "library",
+    "description": "doctrine-query-builder",
     "authors": [
         {
             "name": "Emil Kilhage",
@@ -10,7 +10,7 @@
         }
     ],
     "autoload": {
-        "psr-4": { "Glooby\\TemplateBundle\\": "src/" }
+        "psr-4": { "Glooby\\Doctrine\\QueryBuilder": "src/" }
     },
     "require": {
         "php": ">=5.6",
