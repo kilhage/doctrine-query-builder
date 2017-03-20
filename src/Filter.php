@@ -20,6 +20,8 @@ interface Filter
     const BETWEEN = '$between';
     const IS_NULL = '$is_null';
     const NOT_NULL = '$not_null';
+    const SAME = '$same';
+    const NOT_SAME = '$not_same';
     /** Less then or equals <= */
     const LTE = '$lte';
     /** Less then < */

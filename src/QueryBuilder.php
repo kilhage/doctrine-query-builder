@@ -3,6 +3,7 @@
 namespace Glooby\Doctrine\QueryBuilder;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -40,9 +41,7 @@ class QueryBuilder
      */
     public function build(EntityRepository $repo, array $params)
     {
-        print_r($params);
-
-        $alias = $params[Param::ALIAS] ?? 'xxxx'.random_int(1, 200);
+        $alias = isset($params[Param::ALIAS]) ? $params[Param::ALIAS] : 'xxxx'.random_int(1, 200);
 
         $query = $repo->createQueryBuilder($alias);
 
@@ -122,17 +121,28 @@ class QueryBuilder
      *
      * @return array
      */
-    private function addFilters(\Doctrine\ORM\QueryBuilder $query, \Doctrine\ORM\Query\Expr $expr, array $filters, string $alias)
-    {
+    private function addFilters(
+        \Doctrine\ORM\QueryBuilder $query,
+        \Doctrine\ORM\Query\Expr $expr,
+        array $filters,
+        $alias
+    ) {
         $predicts = [];
 
         foreach ($filters as $field => $filter) {
-            if ($field === Filter::_OR) {
+            if ($filter instanceof Expr\Base) {
+                $predicts[] = $filter;
+            } elseif (is_int($field)) {
+                $predicts = array_merge(
+                    $predicts,
+                    $this->addFilters($query, $expr, $filter, $alias)
+                );
+            } elseif ($field === Filter::_OR) {
                 $or = $this->addFilters($query, $expr, $filter, $alias);
-                $predicts[] = $expr->orX(...$or);
+                $predicts[] = call_user_func_array([$expr, 'orX'], $or);
             } elseif ($field === Filter::_AND) {
                 $and = $this->addFilters($query, $expr, $filter, $alias);
-                $predicts[] = $expr->andX(...$and);
+                $predicts[] = call_user_func_array([$expr, 'andX'], $and);
             } else {
                 if (!is_array($filter)) {
                     $value = $filter;
@@ -154,6 +164,12 @@ class QueryBuilder
                         case Filter::EQUALS:
                             $value = $expr->literal($value);
                             $predicts[] = $expr->eq($field, $value);
+                            break;
+                        case Filter::SAME:
+                            $predicts[] = $expr->eq($field, $value);
+                            break;
+                        case Filter::NOT_SAME:
+                            $predicts[] = $expr->neq($field, $value);
                             break;
                         case Filter::NOT_EQUALS:
                             $value = $expr->literal($value);
@@ -226,12 +242,12 @@ class QueryBuilder
      * @param string $alias
      * @param array $params
      */
-    private function buildFilters(\Doctrine\ORM\QueryBuilder $query, string $alias, array $params)
+    private function buildFilters(\Doctrine\ORM\QueryBuilder $query, $alias, array $params)
     {
         if (is_array($params[Param::FILTER])) {
             $expr = $query->expr();
             $and = $this->addFilters($query, $expr, $params[Param::FILTER], $alias);
-            $query->where(...$and);
+            call_user_func_array([$query, 'where'], $and);
         } else {
             throw new BadRequestHttpException();
         }
@@ -253,7 +269,7 @@ class QueryBuilder
      * @param string $alias
      * @param array $params
      */
-    private function addJoin(\Doctrine\ORM\QueryBuilder $query, string $alias, array $params)
+    private function addJoin(\Doctrine\ORM\QueryBuilder $query, $alias, array $params)
     {
         foreach ($params[Param::JOIN] as $join => $a) {
             if (false === strpos($join, '.')) {
@@ -266,23 +282,23 @@ class QueryBuilder
                 ];
             }
 
-            switch (strtolower($a['type'] ?? 'inner')) {
+            switch (strtolower(isset($a['type']) ? $a['type'] : 'inner')) {
                 case 'inner':
                     $query->innerJoin(
                         $join,
                         $a['alias'],
-                        $a['conditionType'] ?? Join::WITH,
-                        $a['condition'] ?? null,
-                        $a['indexBy'] ?? null
+                        isset($a['conditionType']) ? $a['conditionType'] : Join::WITH,
+                        isset($a['condition']) ? $a['condition'] : null,
+                        isset($a['indexBy']) ? $a['indexBy'] : null
                     );
                     break;
                 case 'left':
                     $query->leftJoin(
                         $join,
                         $a['alias'],
-                        $a['conditionType'] ?? Join::WITH,
-                        $a['condition'] ?? null,
-                        $a['indexBy'] ?? null
+                        isset($a['conditionType']) ? $a['conditionType'] : Join::WITH,
+                        isset($a['condition']) ? $a['condition'] : null,
+                        isset($a['indexBy']) ? $a['indexBy'] : null
                     );
                     break;
             }
