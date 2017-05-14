@@ -25,6 +25,7 @@ class QueryBuilder
             Param::LIMIT => $request->get(Param::LIMIT, 20),
             Param::OFFSET => $request->get(Param::OFFSET, 0),
             Param::ORDER_BY => $request->get(Param::ORDER_BY, null),
+            Param::GROUP_BY => $request->get(Param::GROUP_BY, null),
             Param::WHERE => $request->get(Param::WHERE, null),
             Param::PARAMS => $request->get(Param::PARAMS, null),
             Param::ALIAS => $request->get(Param::ALIAS, null),
@@ -73,11 +74,41 @@ class QueryBuilder
             $this->buildOrderBy($query, $params[Param::ORDER_BY], $alias);
         }
 
+        if (!empty($params[Param::GROUP_BY])) {
+            $this->buildGroupBy($query, $params[Param::GROUP_BY], $alias);
+        }
+
         if (!empty($params[Param::PARAMS])) {
             $this->setParams($query, $params);
         }
 
         return $query;
+    }
+
+    /**
+     * @param \Doctrine\ORM\QueryBuilder $query
+     * @param string|array $groupBy
+     * @param string $alias
+     */
+    private function buildGroupBy(\Doctrine\ORM\QueryBuilder $query, $groupBy, $alias)
+    {
+        if (!empty($groupBy)) {
+            if (is_string($groupBy)) {
+                if (false === strpos($groupBy, '.')) {
+                    $groupBy = "$alias.$groupBy";
+                }
+
+                $query->addGroupBy($groupBy);
+            } elseif (is_array($groupBy)) {
+                foreach ($groupBy as $column) {
+                    if (false === strpos($column, '.')) {
+                        $column = "$alias.$column";
+                    }
+
+                    $query->addGroupBy($column);
+                }
+            }
+        }
     }
 
     /**
