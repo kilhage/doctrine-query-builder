@@ -207,11 +207,11 @@ class QueryBuilder
                             $predicts[] = $expr->neq($field, $value);
                             break;
                         case Filter::STARTS:
-                            $value = $expr->literal("%$value");
+                            $value = $expr->literal("$value%");
                             $predicts[] = $expr->like($field, $value);
                             break;
                         case Filter::ENDS:
-                            $value = $expr->literal("$value%");
+                            $value = $expr->literal("%$value");
                             $predicts[] = $expr->like($field, $value);
                             break;
                         case Filter::CONTAINS:
